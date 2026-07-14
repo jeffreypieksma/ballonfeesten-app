@@ -37,6 +37,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "088d1e0e-c6ed-4f4f-b422-b9afb341aac7"
+      }
+    },
+    "owner": "webdesignjoures-team"
   }
 }
