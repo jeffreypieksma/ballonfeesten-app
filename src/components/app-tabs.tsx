@@ -14,7 +14,13 @@ export default function AppTabs() {
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
+      {/*
+        disableTransparentOnScrollEdge: our screens render a fixed header above
+        the ScrollView, so the scroll-edge appearance can't attach and the bar
+        turns fully transparent (icons floating over photos). An opaque bar is
+        the readable, brand-safe choice.
+      */}
+      <NativeTabs.Trigger name="index" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/home.png')}
@@ -22,7 +28,7 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="programma">
+      <NativeTabs.Trigger name="programma" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Programma</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="calendar" md="event" />
       </NativeTabs.Trigger>
@@ -34,17 +40,17 @@ export default function AppTabs() {
         Here we only give the tab a brand-red, non-template icon so it still
         stands out inside the native bar.
       */}
-      <NativeTabs.Trigger name="bingo">
+      <NativeTabs.Trigger name="bingo" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Bingo</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="balloon.2.fill" md="celebration" renderingMode="original" selectedColor={theme.primary} />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="ballonnen">
+      <NativeTabs.Trigger name="ballonnen" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Ballonnen</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="balloon" md="filter_vintage" />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="paspoort">
+      <NativeTabs.Trigger name="paspoort" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Paspoort</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="book.closed.fill" md="menu_book" />
       </NativeTabs.Trigger>

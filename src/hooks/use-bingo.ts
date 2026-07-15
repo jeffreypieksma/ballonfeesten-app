@@ -8,7 +8,7 @@ import {
   getNewlyCompletedLines,
   isCardComplete,
 } from '@/lib/bingo';
-import { clearSpottedIds, loadSpottedIds, saveSpottedIds } from '@/lib/bingo-storage';
+import { clearSpots, loadSpots, loadSpottedIds, saveSpots, type SpotRecord } from '@/lib/bingo-storage';
 import type { BingoCard, BingoLine } from '@/types/bingo';
 
 export type BingoCelebration =
@@ -40,24 +40,24 @@ export type BingoState =
  * optimistic updates, persistence, and celebration detection (new line / full card).
  */
 export function useBingo(): BingoState {
-  const [data, setData] = useState<{ card: BingoCard; spottedIds: string[] } | 'loading' | 'error'>(
+  const [data, setData] = useState<{ card: BingoCard; spots: SpotRecord[] } | 'loading' | 'error'>(
     'loading'
   );
   const [lastSpottedId, setLastSpottedId] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<BingoCelebration | null>(null);
   const celebrationKey = useRef(0);
-  // Mirrors the latest spottedIds so rapid successive updates never read stale state.
-  const idsRef = useRef<string[]>([]);
+  // Mirrors the latest spots so rapid successive updates never read stale state.
+  const spotsRef = useRef<SpotRecord[]>([]);
 
   const load = useCallback(() => {
     let cancelled = false;
 
     getBingoCard()
       .then(async (card) => {
-        const stored = await loadSpottedIds(card.id);
+        const stored = await loadSpots(card.id);
         if (cancelled) return;
-        idsRef.current = stored;
-        setData({ card, spottedIds: stored });
+        spotsRef.current = stored;
+        setData({ card, spots: stored });
       })
       .catch(() => {
         if (!cancelled) setData('error');
@@ -82,15 +82,18 @@ export function useBingo(): BingoState {
   if (data === 'error') return { status: 'error', retry };
 
   const { card } = data;
+  const currentIds = data.spots.map((spot) => spot.id);
 
-  const applyIds = (next: string[], options?: { spottedId?: string; celebrate?: boolean }) => {
-    const before = getCompletedLines(card, idsRef.current);
-    const after = getCompletedLines(card, next);
-    const wasComplete = isCardComplete(card, idsRef.current);
-    const nowComplete = isCardComplete(card, next);
+  const applySpots = (next: SpotRecord[], options?: { spottedId?: string; celebrate?: boolean }) => {
+    const nextIds = next.map((spot) => spot.id);
+    const prevIds = spotsRef.current.map((spot) => spot.id);
+    const before = getCompletedLines(card, prevIds);
+    const after = getCompletedLines(card, nextIds);
+    const wasComplete = isCardComplete(card, prevIds);
+    const nowComplete = isCardComplete(card, nextIds);
 
-    idsRef.current = next;
-    setData({ card, spottedIds: next });
+    spotsRef.current = next;
+    setData({ card, spots: next });
     setLastSpottedId(options?.spottedId ?? null);
 
     if (options?.celebrate) {
@@ -106,36 +109,43 @@ export function useBingo(): BingoState {
       }
     }
 
-    void saveSpottedIds(card.id, next);
+    void saveSpots(card.id, next);
   };
 
   const toggleSpot = (tileId: string) => {
-    const current = idsRef.current;
-    if (current.includes(tileId)) {
+    const current = spotsRef.current;
+    if (current.some((spot) => spot.id === tileId)) {
       // Un-spotting never celebrates and clears the slam target.
-      applyIds(current.filter((id) => id !== tileId));
+      applySpots(current.filter((spot) => spot.id !== tileId));
     } else {
-      applyIds([...current, tileId], { spottedId: tileId, celebrate: true });
+      applySpots([...current, { id: tileId, spottedAt: new Date().toISOString() }], {
+        spottedId: tileId,
+        celebrate: true,
+      });
     }
   };
 
   return {
     status: 'ready',
     card,
-    spottedIds: data.spottedIds,
-    completedLines: getCompletedLines(card, data.spottedIds),
-    isComplete: isCardComplete(card, data.spottedIds),
+    spottedIds: currentIds,
+    completedLines: getCompletedLines(card, currentIds),
+    isComplete: isCardComplete(card, currentIds),
     lastSpottedId,
     toggleSpot,
     celebration,
     dismissCelebration: () => setCelebration(null),
-    setSpottedIds: (ids) => applyIds(ids, { celebrate: true }),
+    setSpottedIds: (ids) =>
+      applySpots(
+        ids.map((id) => spotsRef.current.find((spot) => spot.id === id) ?? { id, spottedAt: new Date().toISOString() }),
+        { celebrate: true }
+      ),
     resetProgress: () => {
-      idsRef.current = [];
-      setData({ card, spottedIds: [] });
+      spotsRef.current = [];
+      setData({ card, spots: [] });
       setLastSpottedId(null);
       setCelebration(null);
-      void clearSpottedIds(card.id);
+      void clearSpots(card.id);
     },
   };
 }
