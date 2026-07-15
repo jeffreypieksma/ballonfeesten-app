@@ -55,7 +55,7 @@ export default function HomeScreen() {
           nickname={nickname}
           levelName={data.level.levelName}
           eventStatus={data.eventStatus}
-          onPressProfile={() => router.push('/programma')}
+          onPressProfile={() => router.push('/instellingen')}
         />
 
         {state === 'offline' && <OfflineBanner />}

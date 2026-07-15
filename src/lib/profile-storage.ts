@@ -11,6 +11,9 @@ export type Profile = {
   onboardedAt: string;
 };
 
+export const NICKNAME_MIN_LENGTH = 2;
+export const NICKNAME_MAX_LENGTH = 24;
+
 const PROFILE_KEY = 'ballonfeesten:profiel:v1';
 
 /** Pure parser — returns null for anything malformed. Unit-testable. */

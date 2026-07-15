@@ -20,7 +20,7 @@ export default function AppTabs() {
         turns fully transparent (icons floating over photos). An opaque bar is
         the readable, brand-safe choice.
       */}
-      <NativeTabs.Trigger name="index" disableTransparentOnScrollEdge>
+      <NativeTabs.Trigger name="(home)" disableTransparentOnScrollEdge>
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/home.png')}

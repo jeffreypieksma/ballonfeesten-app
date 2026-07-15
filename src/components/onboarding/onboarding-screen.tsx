@@ -9,9 +9,7 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useTheme } from '@/hooks/use-theme';
 import { triggerHaptic } from '@/lib/haptics';
-
-const MIN_NAME_LENGTH = 2;
-const MAX_NAME_LENGTH = 24;
+import { NICKNAME_MAX_LENGTH, NICKNAME_MIN_LENGTH } from '@/lib/profile-storage';
 
 type OnboardingScreenProps = {
   onComplete: (nickname: string) => void;
@@ -28,7 +26,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const [name, setName] = useState('');
 
   const trimmed = name.trim();
-  const valid = trimmed.length >= MIN_NAME_LENGTH;
+  const valid = trimmed.length >= NICKNAME_MIN_LENGTH;
 
   const handleStart = () => {
     if (!valid) return;
@@ -73,7 +71,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
               onChangeText={setName}
               placeholder="Bijv. Luchtverkenner"
               placeholderTextColor={theme.textSecondary}
-              maxLength={MAX_NAME_LENGTH}
+              maxLength={NICKNAME_MAX_LENGTH}
               autoCapitalize="words"
               autoCorrect={false}
               returnKeyType="done"

@@ -19,7 +19,11 @@ export function HomeHeader({ nickname, levelName, eventStatus, onPressProfile }:
 
   return (
     <View style={styles.row}>
-      <View style={styles.left}>
+      <Pressable
+        onPress={onPressProfile}
+        accessibilityRole="button"
+        accessibilityLabel="Open instellingen"
+        style={({ pressed }) => [styles.left, pressed && styles.pressed]}>
         <View style={[styles.avatar, { backgroundColor: theme.accentSoft }]}>
           <ThemedText style={styles.avatarEmoji}>🧑‍✈️</ThemedText>
         </View>
@@ -34,7 +38,7 @@ export function HomeHeader({ nickname, levelName, eventStatus, onPressProfile }:
             </ThemedText>
           </View>
         </View>
-      </View>
+      </Pressable>
 
       <View style={styles.right}>
         <ThemedView
