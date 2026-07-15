@@ -1,11 +1,20 @@
 import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { AppThemeColor, Fonts } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
-  themeColor?: ThemeColor;
+  type?:
+    | 'default'
+    | 'title'
+    | 'hero'
+    | 'small'
+    | 'smallBold'
+    | 'subtitle'
+    | 'link'
+    | 'linkPrimary'
+    | 'code';
+  themeColor?: AppThemeColor;
 };
 
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
@@ -17,6 +26,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         { color: theme[themeColor ?? 'text'] },
         type === 'default' && styles.default,
         type === 'title' && styles.title,
+        type === 'hero' && styles.hero,
         type === 'small' && styles.small,
         type === 'smallBold' && styles.smallBold,
         type === 'subtitle' && styles.subtitle,
@@ -48,8 +58,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 48,
-    fontWeight: 600,
+    fontWeight: 800,
     lineHeight: 52,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  hero: {
+    fontSize: 28,
+    fontWeight: 800,
+    lineHeight: 34,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    fontFamily: Fonts.rounded,
   },
   subtitle: {
     fontSize: 32,
@@ -63,7 +83,7 @@ const styles = StyleSheet.create({
   linkPrimary: {
     lineHeight: 30,
     fontSize: 14,
-    color: '#3c87f7',
+    color: '#2b43bb',
   },
   code: {
     fontFamily: Fonts.mono,

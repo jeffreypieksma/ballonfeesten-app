@@ -14,6 +14,8 @@ import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { triggerHaptic } from '@/lib/haptics';
 
 export default function AppTabs() {
   return (
@@ -24,8 +26,17 @@ export default function AppTabs() {
           <TabTrigger name="home" href="/" asChild>
             <TabButton>Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="programma" href="/programma" asChild>
+            <TabButton>Programma</TabButton>
+          </TabTrigger>
+          <TabTrigger name="bingo" href="/bingo" asChild>
+            <BingoTabButton>Bingo</BingoTabButton>
+          </TabTrigger>
+          <TabTrigger name="ballonnen" href="/ballonnen" asChild>
+            <TabButton>Ballonnen</TabButton>
+          </TabTrigger>
+          <TabTrigger name="paspoort" href="/paspoort" asChild>
+            <TabButton>Paspoort</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -47,6 +58,32 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
   );
 }
 
+// The one place we CAN give the Bingo tab true custom emphasis (bigger,
+// glowing, floating) — NativeTabs on iOS/Android has no equivalent API.
+export function BingoTabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      {...props}
+      onPress={(event) => {
+        triggerHaptic('medium');
+        props.onPress?.(event);
+      }}
+      style={({ pressed }) => pressed && styles.pressed}>
+      <ThemedView
+        style={[
+          styles.bingoButtonView,
+          { backgroundColor: theme.primary, boxShadow: `0px 4px 12px ${theme.primaryPressed}` } as never,
+        ]}>
+        <ThemedText type="smallBold" style={styles.bingoButtonText}>
+          🎈 {children}
+        </ThemedText>
+      </ThemedView>
+    </Pressable>
+  );
+}
+
 export function CustomTabList(props: TabListProps) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
@@ -54,8 +91,8 @@ export function CustomTabList(props: TabListProps) {
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
+        <ThemedText type="smallBold" themeColor="primary" style={styles.brandText}>
+          Friese Ballonfeesten
         </ThemedText>
 
         {props.children}
@@ -104,6 +141,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.three,
+  },
+  bingoButtonView: {
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.four,
+    borderRadius: Spacing.five,
+  },
+  bingoButtonText: {
+    color: '#ffffff',
   },
   externalPressable: {
     flexDirection: 'row',

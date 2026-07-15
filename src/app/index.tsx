@@ -1,62 +1,107 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
+import { BingoHeroCard } from '@/components/home/bingo-hero-card';
+import { ConfettiBurst } from '@/components/home/confetti-burst';
+import { DevStateSwitcher } from '@/components/home/dev-state-switcher';
+import { ErrorBanner } from '@/components/home/error-banner';
+import { EventStatusCard } from '@/components/home/event-status-card';
+import { FeaturedBalloonCard } from '@/components/home/featured-balloon-card';
+import { HomeHeader } from '@/components/home/home-header';
+import { HomeSkeleton } from '@/components/home/home-skeletons';
+import { LevelProgressCard } from '@/components/home/level-progress-card';
+import { NoProgramNotice } from '@/components/home/no-program-notice';
+import { OfflineBanner } from '@/components/home/offline-banner';
+import { PassportPreview } from '@/components/home/passport-preview';
+import { RecommendedMissionCard } from '@/components/home/recommended-mission-card';
+import { SectionHeader } from '@/components/home/section-header';
+import { SponsorMissionCard } from '@/components/home/sponsor-mission-card';
+import { UpcomingProgramCard } from '@/components/home/upcoming-program-card';
 import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools test</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import { useBingoSummary } from '@/hooks/use-bingo';
+import { useHomeScreenState } from '@/hooks/use-home-screen-state';
+import { mockDataByState } from '@/mocks/home-mock-data';
 
 export default function HomeScreen() {
+  const { state, setState } = useHomeScreenState();
+  const insets = useSafeAreaInsets();
+  const bingoSummary = useBingoSummary();
+  const data = mockDataByState[state];
+  // In the production scenario the hero shows real stored bingo progress;
+  // other dev scenarios keep their mock values so the state switcher still works.
+  const bingoProgress = state === 'active' && bingoSummary ? bingoSummary : data.bingo;
+
+  const devSwitcherOffset = insets.bottom + BottomTabInset + Spacing.two;
+
+  if (state === 'loading') {
+    return <HomeSkeleton />;
+  }
+
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + BottomTabInset + Spacing.six },
+        ]}>
+        <HomeHeader
+          nickname={data.nickname}
+          levelName={data.level.levelName}
+          eventStatus={data.eventStatus}
+          onPressProfile={() => router.push('/programma')}
+        />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        {state === 'offline' && <OfflineBanner />}
+        {state === 'error' && <ErrorBanner onRetry={() => setState('active')} />}
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        <BingoHeroCard
+          progress={bingoProgress}
+          isNewUser={state === 'new'}
+          onPressStart={() => router.push('/bingo')}
+        />
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
+        {state === 'noProgram' ? (
+          <NoProgramNotice />
+        ) : (
+          <EventStatusCard status={data.eventStatus} onPressMore={() => router.push('/programma')} />
+        )}
+
+        <RecommendedMissionCard mission={data.recommendedMission} onPress={() => router.push('/bingo')} />
+
+        <SectionHeader title="Jouw ballonpaspoort" actionLabel="Bekijk mijn paspoort" onPressAction={() => router.push('/paspoort')} />
+        <PassportPreview
+          lastStamp={data.lastStamp}
+          collection={data.collection}
+          justStamped={state === 'rowCompleted'}
+          onPress={() => router.push('/paspoort')}
+        />
+
+        {data.program.length > 0 && (
+          <>
+            <SectionHeader
+              title="Vandaag op het programma"
+              actionLabel="Bekijk volledig programma"
+              onPressAction={() => router.push('/programma')}
+            />
+            <UpcomingProgramCard items={data.program} onPressItem={() => router.push('/programma')} />
+          </>
+        )}
+
+        <LevelProgressCard level={data.level} isNewBadge={state === 'rowCompleted'} />
+
+        <FeaturedBalloonCard balloon={data.featuredBalloon} onPress={() => router.push('/ballonnen')} />
+
+        <SponsorMissionCard sponsor={data.sponsor} />
+      </ScrollView>
+
+      {state === 'rowCompleted' && <ConfettiBurst />}
+
+      {__DEV__ && (
+        <DevStateSwitcher current={state} onSelect={setState} bottomOffset={devSwitcherOffset} />
+      )}
     </ThemedView>
   );
 }
@@ -64,35 +109,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
+  content: {
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    gap: Spacing.four,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: MaxContentWidth,
   },
 });
