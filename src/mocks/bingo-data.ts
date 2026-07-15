@@ -1,3 +1,4 @@
+import type { SpotRecord } from '@/lib/bingo-storage';
 import type { BingoCard } from '@/types/bingo';
 
 /**
@@ -13,6 +14,7 @@ import type { BingoCard } from '@/types/bingo';
 export const bingoCard: BingoCard = {
   id: 'joure-2026-standaard',
   title: 'Ballonbingo Joure 2026',
+  year: 2026,
   tiles: [
     {
       id: 'poppke',
@@ -88,3 +90,34 @@ export const bingoCard: BingoCard = {
     },
   ],
 };
+
+/**
+ * DEMO — een vorige editie zodat het paspoort-jaararchief zichtbaar en
+ * testbaar is. Verwijderen (samen met `seedDemoArchiveSpots` in
+ * `@/lib/bingo-storage`) zodra het CMS echte edities levert.
+ */
+export const bingoCard2025Demo: BingoCard = {
+  id: 'joure-2025-standaard',
+  title: 'Ballonbingo Joure 2025',
+  year: 2025,
+  tiles: [
+    bingoCard.tiles.find((tile) => tile.id === 'sinneblom')!,
+    bingoCard.tiles.find((tile) => tile.id === 'schildpad')!,
+    bingoCard.tiles.find((tile) => tile.id === 'lachebek')!,
+    bingoCard.tiles.find((tile) => tile.id === 'regenboog')!,
+    bingoCard.tiles.find((tile) => tile.id === 'blauwe-reus')!,
+    bingoCard.tiles.find((tile) => tile.id === 'rode-vier')!,
+  ],
+};
+
+/** DEMO — voorbeeldstempels voor de 2025-kaart (alleen dev; zie seedDemoArchiveSpots). */
+export const demoArchiveSpots2025: SpotRecord[] = [
+  { id: 'sinneblom', spottedAt: '2025-07-18T19:24:00' },
+  { id: 'schildpad', spottedAt: '2025-07-18T20:02:00' },
+  { id: 'regenboog', spottedAt: '2025-07-19T18:41:00' },
+  { id: 'blauwe-reus', spottedAt: '2025-07-19T21:15:00' },
+];
+
+/** All known editions, newest first. */
+export const bingoCards: BingoCard[] = [bingoCard, bingoCard2025Demo];
+

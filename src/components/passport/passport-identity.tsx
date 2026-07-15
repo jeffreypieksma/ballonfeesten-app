@@ -6,16 +6,17 @@ import { useTheme } from '@/hooks/use-theme';
 
 type PassportIdentityProps = {
   nickname: string;
+  year: number;
 };
 
 /** The passport "cover": dark blue card with a gold trim and the holder's identity. */
-export function PassportIdentity({ nickname }: PassportIdentityProps) {
+export function PassportIdentity({ nickname, year }: PassportIdentityProps) {
   const theme = useTheme();
 
   return (
     <View
       style={[styles.cover, { backgroundColor: theme.secondary, borderColor: theme.gold }, CardShadow]}
-      accessibilityLabel={`Ballonpaspoort van ${nickname}, Friese Ballonfeesten 2026`}>
+      accessibilityLabel={`Ballonpaspoort van ${nickname}, Friese Ballonfeesten ${year}`}>
       <View style={[styles.avatar, { backgroundColor: theme.secondarySoft }]}>
         <ThemedText style={styles.avatarEmoji} accessibilityElementsHidden>
           🧑‍✈️
@@ -29,7 +30,7 @@ export function PassportIdentity({ nickname }: PassportIdentityProps) {
           {nickname}
         </ThemedText>
         <ThemedText type="small" style={[styles.edition, { color: theme.goldSoft }]}>
-          Friese Ballonfeesten · editie 2026
+          Friese Ballonfeesten · editie {year}
         </ThemedText>
       </View>
     </View>

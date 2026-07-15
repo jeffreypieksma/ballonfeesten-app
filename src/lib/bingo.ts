@@ -1,17 +1,28 @@
-import { bingoCard } from '@/mocks/bingo-data';
+import { seedDemoArchiveSpots } from '@/lib/bingo-storage';
+import { bingoCard2025Demo, bingoCards, demoArchiveSpots2025 } from '@/mocks/bingo-data';
 import type { AppThemeColor } from '@/constants/theme';
 import type { BingoCard, BingoCategory, BingoLine } from '@/types/bingo';
 
 /**
- * Backend-agnostic data source for the bingo card.
+ * Backend-agnostic data source for the bingo cards (one per festival edition).
  *
- * Today it returns the local mock card. When the CMS lands, replace only this
- * function's body — the `BingoCard` shape stays the same, so no UI changes.
+ * Today it returns local mock cards. When the CMS lands, replace only these
+ * function bodies — the `BingoCard` shape stays the same, so no UI changes.
  * Player progress is stored separately (see `@/lib/bingo-storage`) keyed by
  * `card.id`, so a new CMS card automatically starts with fresh progress.
  */
+export async function getBingoCards(): Promise<BingoCard[]> {
+  // DEMO — dev-only: geef de 2025-demokaart wat voorbeeldstempels zodat het
+  // jaararchief iets toont. Verdwijnt samen met de demokaart zodra het CMS
+  // echte edities levert.
+  await seedDemoArchiveSpots(bingoCard2025Demo.id, demoArchiveSpots2025);
+  return [...bingoCards].sort((a, b) => b.year - a.year);
+}
+
+/** The active card: the edition with the highest year. Bingo and the balloon catalogue play on this one. */
 export async function getBingoCard(): Promise<BingoCard> {
-  return bingoCard;
+  const cards = await getBingoCards();
+  return cards[0];
 }
 
 type CategoryMeta = {

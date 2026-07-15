@@ -10,10 +10,12 @@ import { PassportNextGoal } from '@/components/passport/passport-next-goal';
 import { PassportSkeleton } from '@/components/passport/passport-skeleton';
 import { PassportLockedSlot, PassportStampCard } from '@/components/passport/passport-stamp-card';
 import { PassportStats } from '@/components/passport/passport-stats';
+import { PassportYearSelector } from '@/components/passport/passport-year-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { usePassport, type PassportState } from '@/hooks/use-passport';
+import { useProfile } from '@/hooks/use-profile';
 import { useTheme } from '@/hooks/use-theme';
 import type { Balloon } from '@/lib/balloons';
 import { triggerHaptic } from '@/lib/haptics';
@@ -21,7 +23,14 @@ import { homeMockData } from '@/mocks/home-mock-data';
 
 export default function PaspoortScreen() {
   const insets = useSafeAreaInsets();
-  const passport = usePassport();
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const passport = usePassport(selectedCardId);
+  const profileState = useProfile();
+
+  const nickname =
+    profileState.status === 'ready' && profileState.profile
+      ? profileState.profile.nickname
+      : homeMockData.nickname;
 
   return (
     <ThemedView style={styles.container}>
@@ -30,7 +39,7 @@ export default function PaspoortScreen() {
           Ballonpaspoort
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Jouw verzameling van 2026
+          {passport.status === 'ready' ? `Jouw verzameling van ${passport.card.year}` : 'Jouw verzameling'}
         </ThemedText>
       </View>
 
@@ -45,6 +54,8 @@ export default function PaspoortScreen() {
       {passport.status === 'ready' && (
         <PassportReady
           passport={passport}
+          nickname={nickname}
+          onSelectCard={setSelectedCardId}
           bottomInset={insets.bottom + BottomTabInset + Spacing.six}
         />
       )}
@@ -62,14 +73,19 @@ function chunkInPairs<T>(items: T[]): T[][] {
 
 function PassportReady({
   passport,
+  nickname,
+  onSelectCard,
   bottomInset,
 }: {
   passport: Extract<PassportState, { status: 'ready' }>;
+  nickname: string;
+  onSelectCard: (cardId: string) => void;
   bottomInset: number;
 }) {
   const theme = useTheme();
   const [selectedBalloon, setSelectedBalloon] = useState<Balloon | null>(null);
-  const { stamps, locked, totalPoints, found, total } = passport;
+  const { cards, card, stamps, locked, totalPoints, found, total } = passport;
+  const isArchive = card.id !== cards[0].id;
 
   const handlePressStamp = (balloon: Balloon) => {
     triggerHaptic('light');
@@ -78,11 +94,15 @@ function PassportReady({
 
   return (
     <>
+      {cards.length > 1 && (
+        <PassportYearSelector cards={cards} selectedCardId={card.id} onSelect={onSelectCard} />
+      )}
+
       <ScrollView
         style={styles.list}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingBottom: bottomInset }]}>
-        <PassportIdentity nickname={homeMockData.nickname} />
+        <PassportIdentity nickname={nickname} year={card.year} />
         <PassportStats found={found} total={total} totalPoints={totalPoints} />
 
         {stamps.length > 0 ? (
@@ -104,7 +124,9 @@ function PassportReady({
           </View>
         ) : (
           <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-            Nog geen stempels — spot je eerste ballon in de Bingo!
+            {isArchive
+              ? `Geen stempels verzameld in ${card.year}.`
+              : 'Nog geen stempels — spot je eerste ballon in de Bingo!'}
           </ThemedText>
         )}
 
@@ -113,7 +135,7 @@ function PassportReady({
             <View style={styles.sectionHeader}>
               <View style={[styles.accentBar, { backgroundColor: theme.primary }]} />
               <ThemedText type="smallBold" style={styles.sectionTitle} accessibilityRole="header">
-                Nog te spotten
+                {isArchive ? 'Niet gespot dat jaar' : 'Nog te spotten'}
               </ThemedText>
             </View>
             <View style={styles.grid}>
@@ -129,7 +151,17 @@ function PassportReady({
           </>
         )}
 
-        <PassportNextGoal remaining={locked.length} onGoToBingo={() => router.push('/bingo')} />
+        {isArchive ? (
+          <View
+            style={[styles.archiveChip, { backgroundColor: theme.backgroundElement }]}
+            accessibilityLabel={`Editie ${card.year} is afgesloten met ${found} stempels`}>
+            <ThemedText type="smallBold" themeColor="textSecondary">
+              Editie {card.year} · {found} {found === 1 ? 'stempel' : 'stempels'} verzameld
+            </ThemedText>
+          </View>
+        ) : (
+          <PassportNextGoal remaining={locked.length} onGoToBingo={() => router.push('/bingo')} />
+        )}
       </ScrollView>
 
       {selectedBalloon && (
@@ -205,5 +237,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  archiveChip: {
+    alignSelf: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: Radius.pill,
+    borderCurve: 'continuous',
   },
 });

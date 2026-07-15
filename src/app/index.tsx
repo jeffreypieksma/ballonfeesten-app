@@ -22,16 +22,20 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useBingoSummary } from '@/hooks/use-bingo';
 import { useHomeScreenState } from '@/hooks/use-home-screen-state';
+import { useProfile } from '@/hooks/use-profile';
 import { mockDataByState } from '@/mocks/home-mock-data';
 
 export default function HomeScreen() {
   const { state, setState } = useHomeScreenState();
   const insets = useSafeAreaInsets();
   const bingoSummary = useBingoSummary();
+  const profileState = useProfile();
   const data = mockDataByState[state];
   // In the production scenario the hero shows real stored bingo progress;
   // other dev scenarios keep their mock values so the state switcher still works.
   const bingoProgress = state === 'active' && bingoSummary ? bingoSummary : data.bingo;
+  const nickname =
+    profileState.status === 'ready' && profileState.profile ? profileState.profile.nickname : data.nickname;
 
   const devSwitcherOffset = insets.bottom + BottomTabInset + Spacing.two;
 
@@ -48,7 +52,7 @@ export default function HomeScreen() {
           { paddingBottom: insets.bottom + BottomTabInset + Spacing.six },
         ]}>
         <HomeHeader
-          nickname={data.nickname}
+          nickname={nickname}
           levelName={data.level.levelName}
           eventStatus={data.eventStatus}
           onPressProfile={() => router.push('/programma')}

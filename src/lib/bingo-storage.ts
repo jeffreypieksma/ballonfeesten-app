@@ -1,15 +1,12 @@
+import { getStorage } from '@/lib/local-storage';
+
 /**
  * Local persistence for bingo progress, keyed by card id so a future CMS card
  * (new id) starts with fresh progress.
  *
  * Format v2 stores when each balloon was spotted: `{ id, spottedAt? }[]`.
  * Records migrated from v1 (a plain `string[]` of ids) have no `spottedAt`.
- *
- * This is the only file that touches AsyncStorage. On web it is backed by
- * localStorage. AsyncStorage is a native module: on a dev client built before
- * it was installed, importing it throws — so we load it lazily and fall back
- * to in-memory storage (game works, progress just doesn't survive a restart)
- * instead of crashing. All functions are failure-proof: they never throw.
+ * All functions are failure-proof: they never throw.
  */
 
 export type SpotRecord = {
@@ -17,45 +14,6 @@ export type SpotRecord = {
   /** ISO timestamp of the spot; absent for records migrated from v1. */
   spottedAt?: string;
 };
-
-type StorageLike = {
-  getItem: (key: string) => Promise<string | null>;
-  setItem: (key: string, value: string) => Promise<void>;
-  removeItem: (key: string) => Promise<void>;
-};
-
-const memoryStore = new Map<string, string>();
-
-const memoryFallback: StorageLike = {
-  getItem: async (key) => memoryStore.get(key) ?? null,
-  setItem: async (key, value) => {
-    memoryStore.set(key, value);
-  },
-  removeItem: async (key) => {
-    memoryStore.delete(key);
-  },
-};
-
-let storage: StorageLike | null = null;
-
-function getStorage(): StorageLike {
-  if (storage) return storage;
-  try {
-    // Lazy require: the module throws at import time when the native binary
-    // doesn't include it (dev client not yet rebuilt after install).
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    storage = require('@react-native-async-storage/async-storage').default as StorageLike;
-  } catch {
-    if (__DEV__) {
-      console.warn(
-        'Ballonbingo: AsyncStorage niet beschikbaar — voortgang wordt alleen in het geheugen bewaard. ' +
-          'Herbouw de dev-client (npx expo run:ios / run:android) voor echte opslag.'
-      );
-    }
-    storage = memoryFallback;
-  }
-  return storage;
-}
 
 const V1_KEY_PREFIX = 'ballonbingo:spotted:v1:';
 const V2_KEY_PREFIX = 'ballonbingo:spots:v2:';
@@ -136,4 +94,22 @@ export async function clearSpots(cardId: string): Promise<void> {
 export async function loadSpottedIds(cardId: string): Promise<string[]> {
   const spots = await loadSpots(cardId);
   return spots.map((spot) => spot.id);
+}
+
+/**
+ * DEMO — dev-only. Seeds a few spots for the 2025 demo card so the passport
+ * year archive has something to show. Remove together with the demo card in
+ * `@/mocks/bingo-data` once the CMS provides real editions.
+ */
+export async function seedDemoArchiveSpots(cardId: string, spots: readonly SpotRecord[]): Promise<void> {
+  // typeof-guard: this module also runs in plain node (tsx verification scripts).
+  if (typeof __DEV__ === 'undefined' || !__DEV__) return;
+  try {
+    const store = getStorage();
+    const existing = await store.getItem(V2_KEY_PREFIX + cardId);
+    if (existing !== null) return;
+    await store.setItem(V2_KEY_PREFIX + cardId, JSON.stringify(spots));
+  } catch {
+    // Seeding is best-effort only.
+  }
 }

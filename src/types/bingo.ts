@@ -26,6 +26,8 @@ export type BingoCard = {
   /** Stable card id, e.g. 'joure-2026-standaard'. Progress is keyed by this. */
   id: string;
   title: string;
+  /** Festival edition, e.g. 2026. The card with the highest year is active. */
+  year: number;
   /** Exactly 9 tiles in row-major order (indexes 0..8). */
   tiles: BingoTile[];
 };
