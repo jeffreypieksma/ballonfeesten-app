@@ -1,6 +1,6 @@
 import { programDays } from '@/mocks/program-data';
 import type { AppThemeColor } from '@/constants/theme';
-import type { ProgramCategory, ProgramDay } from '@/types/program';
+import type { ProgramCategory, ProgramDay, ProgramEntry } from '@/types/program';
 
 /**
  * Backend-agnostic data source for the festival programme.
@@ -44,6 +44,8 @@ export type ProgramLiveStatus = {
   currentEntryId: string | null;
   /** The next upcoming entry, if any. */
   nextEntryId: string | null;
+  /** The next upcoming entry regardless of the "straks" lead window. */
+  upcomingEntryId: string | null;
 };
 
 /** Fallback window for the very last entry of the festival (no "next" to bound it). */
@@ -89,7 +91,7 @@ type FlatEntry = { dayId: string; entryId: string; category: ProgramCategory; st
  */
 export function getProgramLiveStatus(days: ProgramDay[], now: Date = new Date()): ProgramLiveStatus {
   if (days.length === 0) {
-    return { dayId: '', currentEntryId: null, nextEntryId: null };
+    return { dayId: '', currentEntryId: null, nextEntryId: null, upcomingEntryId: null };
   }
 
   const flat: FlatEntry[] = [];
@@ -115,10 +117,11 @@ export function getProgramLiveStatus(days: ProgramDay[], now: Date = new Date())
   // First entry that hasn't started yet (also covers the pre-festival case).
   const next = flat[currentIndex + 1] ?? null;
   const nextEntryId = next && next.start - t <= STRAKS_LEAD_MS ? next.entryId : null;
+  const upcomingEntryId = next?.entryId ?? null;
 
   // Before the festival: nothing is running yet.
   if (currentIndex === -1) {
-    return { dayId: days[0].id, currentEntryId: null, nextEntryId };
+    return { dayId: days[0].id, currentEntryId: null, nextEntryId, upcomingEntryId };
   }
 
   const current = flat[currentIndex];
@@ -129,7 +132,26 @@ export function getProgramLiveStatus(days: ProgramDay[], now: Date = new Date())
     dayId: current.dayId,
     currentEntryId: isRunning ? current.entryId : null,
     nextEntryId,
+    upcomingEntryId,
   };
+}
+
+/** Resolves an entry id to its day + entry, or null if it no longer exists. */
+export function findProgramEntry(
+  days: ProgramDay[],
+  entryId: string,
+): { day: ProgramDay; entry: ProgramEntry } | null {
+  for (const day of days) {
+    const entry = day.entries.find((candidate) => candidate.id === entryId);
+    if (entry) return { day, entry };
+  }
+  return null;
+}
+
+/** Local calendar date as 'YYYY-MM-DD', matching `ProgramDay.date`. */
+export function toLocalYmd(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** Convenience: the day the selector should open on for the given moment. */

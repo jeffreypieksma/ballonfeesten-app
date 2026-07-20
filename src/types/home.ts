@@ -47,14 +47,6 @@ export type BalloonCollection = {
   total: number;
 };
 
-export type ProgramItem = {
-  time: string;
-  title: string;
-  location: string;
-  category: string;
-  bingoTieIn?: string;
-};
-
 export type LevelProgress = {
   levelName: string;
   score: number;
@@ -85,7 +77,6 @@ export type HomeMockData = {
   collection: BalloonCollection;
   eventStatus: EventStatus;
   recommendedMission: Mission;
-  program: ProgramItem[];
   featuredBalloon: FeaturedBalloon;
   sponsor: Sponsor;
 };

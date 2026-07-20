@@ -29,22 +29,6 @@ const base: HomeMockData = {
     points: 15,
     progressLabel: 'Nog niet gestart',
   },
-  program: [
-    {
-      time: '19:30',
-      title: 'Avondvaart',
-      location: 'Joure',
-      category: 'Ballonvaart',
-      bingoTieIn: 'Hier kun je mogelijk een Special Shape spotten.',
-    },
-    {
-      time: '20:45',
-      title: 'Night Glow',
-      location: 'Sportveld De Hege Dyk',
-      category: 'Avondprogramma',
-      bingoTieIn: 'Telt mee voor de avondchallenge.',
-    },
-  ],
   featuredBalloon: {
     name: 'De Fryske Hûn',
     category: 'Special Shape',
@@ -72,10 +56,7 @@ export const mockDataByState: Record<HomeScreenStateKey, HomeMockData> = {
     level: { ...base.level, score: 365 },
     lastStamp: { ...base.lastStamp, label: 'De Fryske Hûn', points: 25, date: 'Zojuist' },
   },
-  noProgram: {
-    ...base,
-    program: [],
-  },
+  noProgram: base,
   offline: base,
   cancelled: {
     ...base,

@@ -11,7 +11,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useProgram } from '@/hooks/use-program';
-import { getDefaultDayId, getProgramLiveStatus } from '@/lib/program';
+import { setDevTimeOverride, useDevTimeOverride } from '@/lib/dev-time';
+import { getDefaultDayId, getProgramLiveStatus, toLocalYmd } from '@/lib/program';
 import type { ProgramDay } from '@/types/program';
 
 export default function ProgrammaScreen() {
@@ -60,7 +61,8 @@ function ProgramReady({
 }) {
   const [now, setNow] = useState(() => new Date());
   // Dev-only override to simulate a festival moment; null = real clock.
-  const [override, setOverride] = useState<Date | null>(null);
+  // Shared via dev-time.ts so the Home "Nu & Straks" block follows along.
+  const override = useDevTimeOverride();
   const [selectedDayId, setSelectedDayId] = useState(() => getDefaultDayId(days, now));
 
   // Keep the "nu / straks" marking fresh while on the real clock.
@@ -74,7 +76,7 @@ function ProgramReady({
 
   // Jump the day selector to the simulated day when time-travelling.
   const handleOverride = (value: Date | null) => {
-    setOverride(value);
+    setDevTimeOverride(value);
     if (value) setSelectedDayId(getDefaultDayId(days, value));
   };
 
@@ -103,11 +105,6 @@ function ProgramReady({
       {__DEV__ && <DevTimeTravel value={override} onChange={handleOverride} bottomOffset={devBottomOffset} />}
     </>
   );
-}
-
-function toLocalYmd(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 const styles = StyleSheet.create({

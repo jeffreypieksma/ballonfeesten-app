@@ -47,6 +47,8 @@ export function BingoHeroCard({ progress, isNewUser, onPressStart }: BingoHeroCa
   return (
     <Pressable
       onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       accessibilityRole="button"
       accessibilityLabel={`Ballonbingo. ${progressLabel}. ${buttonLabel}`}>
       <Animated.View
@@ -77,17 +79,13 @@ export function BingoHeroCard({ progress, isNewUser, onPressStart }: BingoHeroCa
             </ThemedText>
           )}
 
-          <Pressable
-            onPress={handlePress}
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            accessibilityRole="button"
-            accessibilityLabel={buttonLabel}
-            style={[styles.button, { backgroundColor: theme.primary }]}>
+          {/* Visual only — the whole card is the pressable, so nesting a second
+              button here would emit invalid nested <button> markup on web. */}
+          <View style={[styles.button, { backgroundColor: theme.primary }]}>
             <ThemedText type="smallBold" style={styles.buttonText}>
               {buttonLabel}
             </ThemedText>
-          </Pressable>
+          </View>
         </View>
 
         <FloatingBalloonIllustration />

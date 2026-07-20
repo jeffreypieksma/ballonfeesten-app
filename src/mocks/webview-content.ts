@@ -39,26 +39,6 @@ export function missionContentHtml(
   </body></html>`;
 }
 
-export function programContentHtml(
-  items: { time: string; title: string; location: string; category: string; bingoTieIn?: string }[],
-  colors: ContentColors
-) {
-  const rows = items
-    .map(
-      (item) => `
-      <div class="row" data-action="program-tap:${item.title}">
-        <span class="time">${item.time}</span>
-        <div style="flex:1; margin-left:8px;">
-          <div class="item-title">${item.title}</div>
-          <div class="item-meta">${item.location} · ${item.category}</div>
-          ${item.bingoTieIn ? `<div class="item-meta">${item.bingoTieIn}</div>` : ''}
-        </div>
-      </div>`
-    )
-    .join('');
-  return `<!doctype html><html><head>${baseStyle(colors)}</head><body>${rows}</body></html>`;
-}
-
 export function sponsorContentHtml(sponsor: { name: string; missionLabel: string }, colors: ContentColors) {
   return `<!doctype html><html><head>${baseStyle(colors)}</head><body data-action="sponsor-tap">
     <div class="hint">${sponsor.missionLabel}</div>

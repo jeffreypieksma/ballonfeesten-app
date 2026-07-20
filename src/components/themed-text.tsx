@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     lineHeight: 52,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+    fontFamily: Fonts.heading,
   },
   hero: {
     fontSize: 28,
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     lineHeight: 34,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
-    fontFamily: Fonts.rounded,
+    fontFamily: Fonts.heading,
   },
   subtitle: {
     fontSize: 32,

@@ -102,27 +102,34 @@ export type BalloonThemeColor = keyof typeof BalloonColors.light & keyof typeof 
 
 export type AppThemeColor = ThemeColor | BalloonThemeColor;
 
+/**
+ * Embedded at build time by the `expo-font` config plugin (see app.json).
+ * Android derives the family from the file name, iOS from the font's internal
+ * name — both are `ExcludedItalic` for this file, so one constant covers both.
+ */
+export const HeadingFontFamily = 'ExcludedItalic';
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
     /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
+    /** Excluded Italic, used for headings */
+    heading: HeadingFontFamily,
     /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
     sans: 'normal',
     serif: 'serif',
-    rounded: 'normal',
+    heading: HeadingFontFamily,
     mono: 'monospace',
   },
   web: {
     sans: 'var(--font-display)',
     serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
+    heading: 'var(--font-heading)',
     mono: 'var(--font-mono)',
   },
 });

@@ -1,9 +1,18 @@
+@font-face {
+  font-family: 'ExcludedItalic';
+  /* Served from public/ at the site root. Metro reserves /assets, so the web
+     copy lives in public/fonts while the native build embeds assets/fonts. */
+  src: url('/fonts/ExcludedItalic.ttf') format('truetype');
+  font-display: swap;
+}
+
 :root {
   --font-display:
     Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
     Segoe UI Symbol, Noto Color Emoji;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  /* Excluded Italic covers ASCII only — the fallbacks catch accents (û, é) and dashes. */
+  --font-heading: 'ExcludedItalic', 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 }

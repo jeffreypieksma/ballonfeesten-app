@@ -12,12 +12,12 @@ import { HomeHeader } from '@/components/home/home-header';
 import { HomeSkeleton } from '@/components/home/home-skeletons';
 import { LevelProgressCard } from '@/components/home/level-progress-card';
 import { NoProgramNotice } from '@/components/home/no-program-notice';
+import { NowNextSection } from '@/components/home/now-next-card';
 import { OfflineBanner } from '@/components/home/offline-banner';
 import { PassportPreview } from '@/components/home/passport-preview';
 import { RecommendedMissionCard } from '@/components/home/recommended-mission-card';
 import { SectionHeader } from '@/components/home/section-header';
 import { SponsorMissionCard } from '@/components/home/sponsor-mission-card';
-import { UpcomingProgramCard } from '@/components/home/upcoming-program-card';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useBingoSummary } from '@/hooks/use-bingo';
@@ -83,22 +83,13 @@ export default function HomeScreen() {
           onPress={() => router.push('/paspoort')}
         />
 
-        {data.program.length > 0 && (
-          <>
-            <SectionHeader
-              title="Vandaag op het programma"
-              actionLabel="Bekijk volledig programma"
-              onPressAction={() => router.push('/programma')}
-            />
-            <UpcomingProgramCard items={data.program} onPressItem={() => router.push('/programma')} />
-          </>
-        )}
-
         <LevelProgressCard level={data.level} isNewBadge={state === 'rowCompleted'} />
 
         <FeaturedBalloonCard balloon={data.featuredBalloon} onPress={() => router.push('/ballonnen')} />
 
         <SponsorMissionCard sponsor={data.sponsor} />
+
+        {state !== 'noProgram' && <NowNextSection />}
       </ScrollView>
 
       {state === 'rowCompleted' && <ConfettiBurst />}
